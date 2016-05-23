@@ -1,3 +1,42 @@
+<?php
+function crypto_rand_secure($min, $max) {
+    $range = $max - $min;
+
+    if ($range < 1) return $min;
+
+    $log = ceil(log($range, 2));
+    $bytes = (int) ($log / 8) + 1;
+    $bits = (int) $log + 1;
+    $filter = (int) (1 << $bits) - 1;
+
+    do {
+        $rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
+        $rnd = $rnd & $filter;
+    } while ($rnd >= $range);
+
+    return $min + $rnd;
+}
+
+function getToken($length) {
+    $token = "";
+    $codeAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    $codeAlphabet .= "abcdefghijklmnopqrstuvwxyz";
+    $codeAlphabet .= "0123456789";
+    $max = strlen($codeAlphabet) - 1;
+
+    for ($i=0; $i < $length; $i++) {
+        $token .= $codeAlphabet[crypto_rand_secure(0, $max)];
+    }
+
+    return $token;
+}
+
+if (!isset($_GET["id"])) {
+	header("Location: ./" . getToken(10));
+	exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en" ng-app="subtlist">
 	<head>
@@ -27,39 +66,8 @@
 				</div>
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav">
-						<li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
-						<li><a href="#">Link</a></li>
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Action</a></li>
-								<li><a href="#">Another action</a></li>
-								<li><a href="#">Something else here</a></li>
-								<li role="separator" class="divider"></li>
-								<li><a href="#">Separated link</a></li>
-								<li role="separator" class="divider"></li>
-								<li><a href="#">One more separated link</a></li>
-							</ul>
-						</li>
-					</ul>
-					<form class="navbar-form navbar-left" role="search">
-						<div class="form-group">
-							<input type="text" class="form-control" placeholder="Search">
-						</div>
-						<button type="submit" class="btn btn-default">Submit</button>
-					</form>
-					<ul class="nav navbar-nav navbar-right">
-						<li><a href="#">Link</a></li>
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Action</a></li>
-								<li><a href="#">Another action</a></li>
-								<li><a href="#">Something else here</a></li>
-								<li role="separator" class="divider"></li>
-								<li><a href="#">Separated link</a></li>
-							</ul>
-						</li>
+						<li><a href=".">New</a></li>
+						<li><a href="#">Read-Only</a></li>
 					</ul>
 				</div>
 			</div>
@@ -71,21 +79,22 @@
 			<div class="form-group">
 				<input type="text" class="form-control" placeholder="Subtitle">
 			</div>
-			<div class="input-group">
-				<input type="text" class="form-control" placeholder="Item">
-				<span class="input-group-btn">
-					<button class="btn btn-success" type="button">
-						<span class="glyphicon glyphicon-plus"></span> Add Item
-					</button>
-				</span>
-			</div>
-			<hr>
+			<hr/>
 			<ul class="list-group">
 				<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': movie.done}" ng-repeat="movie in movies">
 					<span ng-class="{'glyphicon glyphicon-ok-circle': !movie.done, 'glyphicon glyphicon-ok-sign': movie.done}"></span>
 					<span ng-class="{done: movie.done}"><b>{{movie.name}}</b></span>
 				</button>
 			</ul>
+			<form class="input-group" ng-submit="addItem()">
+				<input type="text" class="form-control" placeholder="Item">
+				<span class="input-group-btn">
+					<button class="btn btn-success" type="submit">
+						<span class="glyphicon glyphicon-plus"></span> Add Item
+					</button>
+				</span>
+			</form>
+			<br/>
 		</div>
 		<script src="lib/js/jquery-1.12.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>

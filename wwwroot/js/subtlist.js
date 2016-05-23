@@ -8,7 +8,7 @@
 
 		// constants
 
-		// movie names
+		/* movie names
 		var MOVIES = [
 			'The Iron Giant',
 			'The Brave Little Toaster',
@@ -157,7 +157,7 @@
 			'A Walk Among the Tombstones',
 			'Ace Ventura: Pet Detective',
 			'Taking Lives'
-		];
+		];*/
 
 		// gets the number of done movies
 		function getNumDone() {
@@ -194,6 +194,10 @@
 		}
 
 		// public methods
+
+		$scope.addItem = function () {
+
+		};
 
 		// toggles the passed index and updates progress
 		$scope.toggle = function (index) {
