@@ -4,4 +4,9 @@
 
 #progress-bar {
 	min-width: 2em;
+	width: 2%;
+}
+
+.icon {
+	float: right;
 }

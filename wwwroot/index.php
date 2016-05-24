@@ -73,28 +73,57 @@ if (!isset($_GET["id"])) {
 			</div>
 		</nav>
 		<div class="container" ng-controller="main">
-			<div class="form-group">
-				<input type="text" class="form-control" placeholder="Title">
-			</div>
-			<div class="form-group">
-				<input type="text" class="form-control" placeholder="Subtitle">
-			</div>
-			<hr/>
-			<ul class="list-group">
-				<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': movie.done}" ng-repeat="movie in movies">
-					<span ng-class="{'glyphicon glyphicon-ok-circle': !movie.done, 'glyphicon glyphicon-ok-sign': movie.done}"></span>
-					<span ng-class="{done: movie.done}"><b>{{movie.name}}</b></span>
-				</button>
-			</ul>
-			<form class="input-group" ng-submit="addItem()">
-				<input type="text" class="form-control" placeholder="Item">
-				<span class="input-group-btn">
-					<button class="btn btn-success" type="submit">
-						<span class="glyphicon glyphicon-plus"></span> Add Item
+			<!-- Read-only panel -->
+			<div id="view" class="panel panel-default">
+				<div class="panel-heading">
+					<h1 class="panel-title">{{title}} [{{numDone}}/{{list.length}}]<br/><small>{{subtitle}}</small></h1>
+				</div>
+				<div class="panel-body" ng-show="list.length > 0">
+					<div class="progress">
+						<div id="progress-bar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100">
+							{{progress.toFixed(0)}}%
+						</div>
+					</div>
+				</div>
+				<ul class="list-group">
+					<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': item.done}" ng-repeat="item in list">
+						<span ng-class="{'glyphicon glyphicon-ok-circle': !item.done, 'glyphicon glyphicon-ok-sign': item.done}"></span>
+						<span ng-class="{done: item.done}"><b>{{item.name}}</b></span>
 					</button>
-				</span>
-			</form>
-			<br/>
+				</ul>
+			</div>
+
+			<!-- Edit panel -->
+			<div id="edit" class="panel panel-default">
+				<div class="panel-heading">
+					<div class="form-group">
+						<input type="text" class="form-control" placeholder="Title" ng-model="title">
+					</div>
+					<input type="text" class="form-control" placeholder="Subtitle" ng-model="subtitle">
+				</div>
+				<ul class="list-group">
+					<li class="list-group-item" ng-repeat="item in list">
+						<div class="input-group">
+							<input type="text" class="form-control" ng-model="item.name">
+							<span class="input-group-btn">
+								<button class="btn btn-danger" type="button" ng-click="remove($index)">
+									<span class="glyphicon glyphicon-remove"></span>
+								</button>
+							</span>
+						</div>
+					</li>
+				</ul>
+				<div class="panel-footer">
+					<form class="input-group" ng-submit="addItem()">
+						<input type="text" class="form-control" placeholder="Item" ng-model="input">
+						<span class="input-group-btn">
+							<button class="btn btn-success" type="submit">
+								<span class="glyphicon glyphicon-plus"></span>
+							</button>
+						</span>
+					</form>
+				</div>
+			</div>
 		</div>
 		<script src="lib/js/jquery-1.12.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>
