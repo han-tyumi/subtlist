@@ -1,6 +1,5 @@
 <?php
 require_once("token.php");
-session_start();
 if (!isset($_GET["id"])) {
 	header("Location: ./" . getToken(10));
 	exit;

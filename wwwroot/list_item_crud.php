@@ -1,7 +1,7 @@
 <?php
-include_once "config/ListDB.php";
+include_once "config/ListItemDB.php";
 
-$db = new ListDB();
+$db = new ListItemDB();
 $data = json_decode(file_get_contents("php://input"));
 
 if (isset($data->create)) {
