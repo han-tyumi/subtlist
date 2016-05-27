@@ -7,7 +7,7 @@ $data = json_decode(file_get_contents("php://input"));
 if (isset($data->create)) {
 	$data = $db->create($data->title, $data->subtitle);
 	if ($data) {
-		echo json_encode($data);
+		echo "success";
 	} else {
 		echo "failure";
 	}
@@ -19,20 +19,19 @@ if (isset($data->create)) {
 		echo "failure";
 	}
 } elseif (isset($data->can_edit)) {
-	$data = $db->can_edit($data->key);
-	if ($data) {
-		echo json_encode($data);
+	if ($db->can_edit()) {
+		echo "success";
 	} else {
 		echo "failure";
 	}
 } elseif (isset($data->update)) {
-	if ($db->update($data->title, $data->subtitle, $data->key)) {
+	if ($db->update($data->title, $data->subtitle)) {
 		echo "success";
 	} else {
 		echo "failure";
 	}
 } elseif (isset($data->delete)) {
-	if ($db->delete($data->id)) {
+	if ($db->delete()) {
 		echo "success";
 	} else {
 		echo "failure";

@@ -3,7 +3,7 @@
 	var theListApp = angular.module('subtlist', ['ngCookies']);
 
 	// set controller
-	theListApp.controller('main', ['$scope', '$cookies', function ($scope, $cookies) {
+	theListApp.controller('main', ['$scope', '$http', '$cookies', function ($scope, $http, $cookies) {
 		// private members
 
 		var $progressBar = $('#progress-bar'),
@@ -27,9 +27,38 @@
 			$progressBar.css('width', $scope.progress + '%');
 		}
 
+		function canEdit() {
+			$http.post('list_crud.php', {can_edit: true}).then(function (response) {
+				if (response.data === 'success') {
+					$scope.edit = true;
+				} else {
+					$scope.edit = false;
+				}
+			});
+		}
+
+		function read(complete) {
+			$http.post('list_crud.php', {read: true}).then(function (response) {
+				if (response.data !== 'failure') {
+					$scope.title = response.data.title;
+					$scope.subtitle = response.data.subtitle;
+				}
+				complete(response);
+			});
+		}
+
 		// initializes the controller
 		function init() {
 			var i;
+
+			// determine if editing
+			$scope.edit = false;
+			//canEdit();
+			read(function (response) {
+				if (response.data === 'failure') {
+					$scope.edit = true;
+				}
+			});
 
 			$scope.list = [];
 			/*for (i = 0; i < MOVIES.length; i++) {

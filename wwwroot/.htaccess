@@ -1,2 +1,2 @@
 RewriteEngine on
-RewriteRule ^([a-zA-Z0-9]+)$ /index.php?id=$1
+RewriteRule ^([a-zA-Z0-9]+)$ ./index.php?id=$1

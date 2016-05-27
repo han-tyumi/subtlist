@@ -3,7 +3,7 @@ class ListDB {
 	private $host = "***REMOVED***";
 	private $dbname = "subtlist";
 	private $username = "subtlist";
-	private $password = "RoYal1704?";
+	private $password = "***REMOVED***";
 	private $table = "list";
 	private $conn;
 
@@ -17,7 +17,8 @@ class ListDB {
 		$sql = "INSERT INTO `{$this->table}`(`id`, `title`, `subtitle`, `created`, `key`) VALUES (:id,:title,:subtitle,NOW(),:key";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":id" => $_GET["id"], ":title" => $title, ":subtitle" => $subtitle, ":key" => $key))) {
-			return $key;
+			setcookie($_GET["id"] . "rw", $key, time() + (31536000 * 5));
+			return true;
 		} else {
 			return false;
 		}
@@ -34,10 +35,10 @@ class ListDB {
 		}
 	}
 
-	public function can_edit($key) {
+	public function can_edit() {
 		$sql = "SELECT EXISTS(SELECT 1 FROM `{$this->table}` WHERE `id`=:id AND `key`=:key)";
 		$q = $this->conn->prepare($sql);
-		if ($q->execute(array(":id" => $_GET["id"], ":key" => $key))) {
+		if ($q->execute(array(":id" => $_GET["id"], ":key" => $_COOKIE[$_GET["id"] . "rw"]))) {
 			if ($q->rowCount() > 0) {
 				return true;
 			} else {
@@ -48,8 +49,8 @@ class ListDB {
 		}
 	}
 
-	public function update($title, $subtitle, $key) {
-		if can_edit($key) {
+	public function update($title, $subtitle) {
+		if ($this->can_edit()) {
 			$sql = "UPDATE `{$this->table}` SET `title`=:title,`subtitle`=:subtitle WHERE `id`=:id";
 			$q = $this->conn->prepare($sql);
 			if ($q->execute(array(":title" => $title, ":subtitle" => $subtitle, ":id" => $_GET["id"]))) {
@@ -62,11 +63,10 @@ class ListDB {
 		}
 	}
 
-	// implement later, will also have to delete items
-	public function delete($id) {
+	public function delete() {
 		$sql = "DELETE FROM `{$this->table}` WHERE `id`=:id";
 		$q = $this->conn->prepare($sql);
-		if ($q->execute(array(":id" => $id))) {
+		if ($q->execute(array(":id" => $_GET["id"]))) {
 			return true;
 		} else {
 			return false;

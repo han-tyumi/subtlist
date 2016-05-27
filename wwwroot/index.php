@@ -25,7 +25,7 @@ if (!isset($_GET["id"])) {
 		<nav class="navbar navbar-default">
 			<div class="container-fluid">
 				<div class="navbar-header">
-					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
 						<span class="sr-only">Toggle navigation</span>
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
@@ -33,7 +33,7 @@ if (!isset($_GET["id"])) {
 					</button>
 					<a class="navbar-brand" href="#">Subtlist</a>
 				</div>
-				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+				<div class="collapse navbar-collapse" id="navbar-collapse">
 					<ul class="nav navbar-nav">
 						<li><a href=".">New</a></li>
 						<li><a href="#">Read-Only</a></li>
@@ -43,7 +43,7 @@ if (!isset($_GET["id"])) {
 		</nav>
 		<div class="container" ng-controller="main">
 			<!-- Read-only panel -->
-			<div id="view" class="panel panel-default">
+			<div id="view" class="panel panel-default" ng-if="!edit">
 				<div class="panel-heading">
 					<h1 class="panel-title">{{title}} [{{numDone}}/{{list.length}}]<br/><small>{{subtitle}}</small></h1>
 				</div>
@@ -63,7 +63,7 @@ if (!isset($_GET["id"])) {
 			</div>
 
 			<!-- Edit panel -->
-			<div id="edit" class="panel panel-default">
+			<div id="edit" class="panel panel-default" ng-if="edit">
 				<div class="panel-heading">
 					<div class="form-group">
 						<input type="text" class="form-control" placeholder="Title" ng-model="title">

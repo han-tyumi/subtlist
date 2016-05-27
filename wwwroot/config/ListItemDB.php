@@ -3,7 +3,7 @@ class ListItemDB {
 	private $host = "***REMOVED***";
 	private $dbname = "subtlist";
 	private $username = "subtlist";
-	private $password = "RoYal1704?";
+	private $password = "***REMOVED***";
 	private $table = "list_item";
 	private $conn;
 
