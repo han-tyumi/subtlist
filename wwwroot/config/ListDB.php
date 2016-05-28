@@ -14,10 +14,10 @@ class ListDB {
 	public function create($title, $subtitle) {
 		require_once("token.php");
 		$key = getToken(10);
-		$sql = "INSERT INTO `{$this->table}`(`id`, `title`, `subtitle`, `created`, `key`) VALUES (:id,:title,:subtitle,NOW(),:key";
+		$sql = "INSERT INTO `{$this->table}`(`id`, `title`, `subtitle`, `created`, `key`) VALUES (:id,:title,:subtitle,NOW(),:key)";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":id" => $_GET["id"], ":title" => $title, ":subtitle" => $subtitle, ":key" => $key))) {
-			setcookie($_GET["id"] . "rw", $key, time() + (31536000 * 5));
+			setcookie($_GET["id"] . "rw", $key, time() + (31536000 * 5)); // Expires in 5 years
 			return true;
 		} else {
 			return false;

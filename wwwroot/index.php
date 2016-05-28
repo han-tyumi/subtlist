@@ -36,7 +36,7 @@ if (!isset($_GET["id"])) {
 				<div class="collapse navbar-collapse" id="navbar-collapse">
 					<ul class="nav navbar-nav">
 						<li><a href=".">New</a></li>
-						<li><a href="#">Read-Only</a></li>
+						<li ng-if="edit"><a href="#">Read-Only</a></li>
 					</ul>
 				</div>
 			</div>
@@ -75,7 +75,7 @@ if (!isset($_GET["id"])) {
 						<div class="input-group">
 							<input type="text" class="form-control" ng-model="item.name">
 							<span class="input-group-btn">
-								<button class="btn btn-danger" type="button" ng-click="remove($index)">
+								<button class="btn btn-danger" type="button" ng-click="remove(item.id)">
 									<span class="glyphicon glyphicon-remove"></span>
 								</button>
 							</span>

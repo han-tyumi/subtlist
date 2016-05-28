@@ -12,7 +12,7 @@ class ListItemDB {
 	}
 
 	public function create($item) {
-		$sql = "INSERT INTO `{$this->table}`(`item`, `list_id`) VALUES (:item,:list_id";
+		$sql = "INSERT INTO `{$this->table}`(`item`, `list_id`) VALUES (:item,:list_id)";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":item" => $item, ":list_id" => $_GET["id"]))) {
 			return true;
