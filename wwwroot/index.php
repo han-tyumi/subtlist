@@ -3,6 +3,9 @@ require_once("token.php");
 if (!isset($_GET["id"])) {
 	header("Location: ./" . getToken(10));
 	exit;
+} else {
+	session_start();
+	$_SESSION["id"] = $_GET["id"];
 }
 ?>
 
@@ -21,8 +24,9 @@ if (!isset($_GET["id"])) {
 		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 		<![endif]-->
 	</head>
-	<body>
-		<nav class="navbar navbar-default">
+	<body ng-controller="mainController">
+		<!-- Navbar -->
+		<nav class="navbar navbar-default navbar-fixed-top">
 			<div class="container-fluid">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false">
@@ -31,72 +35,24 @@ if (!isset($_GET["id"])) {
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="#">Subtlist</a>
+					<a class="navbar-brand" href=".">Subtlist</a>
 				</div>
 				<div class="collapse navbar-collapse" id="navbar-collapse">
 					<ul class="nav navbar-nav">
 						<li><a href=".">New</a></li>
-						<li ng-if="edit"><a href="#">Read-Only</a></li>
+						<li><a href="#view">View</a></li>
+						<li><a href="#edit">Edit</a></li>
 					</ul>
 				</div>
 			</div>
 		</nav>
-		<div class="container" ng-controller="main">
-			<!-- Read-only panel -->
-			<div id="view" class="panel panel-default" ng-if="!edit">
-				<div class="panel-heading">
-					<h1 class="panel-title">{{title}} [{{numDone}}/{{list.length}}]<br/><small>{{subtitle}}</small></h1>
-				</div>
-				<div class="panel-body" ng-show="list.length > 0">
-					<div class="progress">
-						<div id="progress-bar" class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100">
-							{{progress.toFixed(0)}}%
-						</div>
-					</div>
-				</div>
-				<ul class="list-group">
-					<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': item.done}" ng-repeat="item in list">
-						<span ng-class="{'glyphicon glyphicon-ok-circle': !item.done, 'glyphicon glyphicon-ok-sign': item.done}"></span>
-						<span ng-class="{done: item.done}"><b>{{item.name}}</b></span>
-					</button>
-				</ul>
-			</div>
-
-			<!-- Edit panel -->
-			<div id="edit" class="panel panel-default" ng-if="edit">
-				<div class="panel-heading">
-					<div class="form-group">
-						<input type="text" class="form-control" placeholder="Title" ng-model="title">
-					</div>
-					<input type="text" class="form-control" placeholder="Subtitle" ng-model="subtitle">
-				</div>
-				<ul class="list-group">
-					<li class="list-group-item" ng-repeat="item in list">
-						<div class="input-group">
-							<input type="text" class="form-control" ng-model="item.name">
-							<span class="input-group-btn">
-								<button class="btn btn-danger" type="button" ng-click="remove(item.id)">
-									<span class="glyphicon glyphicon-remove"></span>
-								</button>
-							</span>
-						</div>
-					</li>
-				</ul>
-				<div class="panel-footer">
-					<form class="input-group" ng-submit="addItem()">
-						<input type="text" class="form-control" placeholder="Item" ng-model="input">
-						<span class="input-group-btn">
-							<button class="btn btn-success" type="submit">
-								<span class="glyphicon glyphicon-plus"></span>
-							</button>
-						</span>
-					</form>
-				</div>
-			</div>
+		<div class="container">
+			<div ng-view></div>
 		</div>
 		<script src="lib/js/jquery-1.12.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>
 		<script src="lib/js/angular.min.js"></script>
+		<script src="lib/js/angular-route.min.js"></script>
 		<script src="lib/js/angular-cookies.min.js"></script>
 		<script src="js/subtlist.js"></script>
 	</body>

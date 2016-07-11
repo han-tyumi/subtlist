@@ -5,7 +5,7 @@ $db = new ListItemDB();
 $data = json_decode(file_get_contents("php://input"));
 
 if (isset($data->create)) {
-	if ($db->create($data->item)) {
+	if ($db->create($data->item, $data->order_index)) {
 		echo "success";
 	} else {
 		echo "failure";

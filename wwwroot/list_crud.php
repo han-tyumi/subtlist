@@ -5,8 +5,7 @@ $db = new ListDB();
 $data = json_decode(file_get_contents("php://input"));
 
 if (isset($data->create)) {
-	$data = $db->create($data->title, $data->subtitle);
-	if ($data) {
+	if ($db->create($data->title, $data->subtitle)) {
 		echo "success";
 	} else {
 		echo "failure";

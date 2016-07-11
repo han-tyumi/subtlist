@@ -1,0 +1,11 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h1 class="panel-title">{{list.title}} [{{view.numDone}}/{{list.items.length}}]<br/><small>{{list.subtitle}}</small></h1>
+	</div>
+	<ul class="list-group">
+		<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': item.done}" ng-repeat="item in list.items">
+			<span ng-class="{'glyphicon glyphicon-ok-circle': !item.done, 'glyphicon glyphicon-ok-sign': item.done}"></span>
+			<span ng-class="{done: item.done}"><b>{{item.name.database}}</b></span>
+		</button>
+	</ul>
+</div>

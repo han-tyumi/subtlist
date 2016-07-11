@@ -9,12 +9,13 @@ class ListItemDB {
 
 	public function __construct() {
 		$this->conn = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
+		session_start();
 	}
 
-	public function create($item) {
-		$sql = "INSERT INTO `{$this->table}`(`item`, `list_id`) VALUES (:item,:list_id)";
+	public function create($item, $order_index) {
+		$sql = "INSERT INTO `{$this->table}`(`item`, `list_id`, `order_index`) VALUES (:item,:list_id,:order_index)";
 		$q = $this->conn->prepare($sql);
-		if ($q->execute(array(":item" => $item, ":list_id" => $_GET["id"]))) {
+		if ($q->execute(array(":item" => $item, ":list_id" => $_SESSION["id"], ":order_index" => $order_index))) {
 			return true;
 		} else {
 			return false;
@@ -22,9 +23,9 @@ class ListItemDB {
 	}
 
 	public function read() {
-		$sql = "SELECT `id`, `item` FROM `{$this->table}` WHERE `list_id`=:list_id";
+		$sql = "SELECT `id`, `item`, `order_index` FROM `{$this->table}` WHERE `list_id`=:list_id ORDER BY `order_index` ASC";
 		$q = $this->conn->prepare($sql);
-		if ($q->execute(array(":list_id" => $_GET["id"]))) {
+		if ($q->execute(array(":list_id" => $_SESSION["id"]))) {
 			while ($row = $q->fetch(PDO::FETCH_ASSOC)) {
 				$data[] = $row;
 			}

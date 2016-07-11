@@ -1,0 +1,33 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<div class="form-group">
+			<input type="text" class="form-control" placeholder="Title" ng-model="list.title">
+		</div>
+		<input type="text" class="form-control" placeholder="Subtitle" ng-model="list.subtitle">
+	</div>
+	<ul class="list-group">
+		<li class="list-group-item" ng-repeat="item in list.items">
+			<form class="input-group" ng-class="{'has-error': item.name.database !== item.name.input}" ng-submit="updateItem(item.id, item.name.input)">
+				<input type="text" class="form-control" ng-model="item.name.input">
+				<span class="input-group-btn">
+					<button class="btn btn-danger" type="button" ng-click="delete(item.id)">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
+					<button class="btn btn-success" type="submit" ng-if="item.name.database !== item.name.input">
+						<span class="glyphicon glyphicon-floppy-save"></span>
+					</button>
+				</span>
+			</form>
+		</li>
+	</ul>
+	<div class="panel-footer">
+		<form class="input-group" ng-submit="addItem()">
+			<input type="text" class="form-control" placeholder="Item" ng-model="edit.input">
+			<span class="input-group-btn">
+				<button class="btn btn-success" type="submit">
+					<span class="glyphicon glyphicon-plus"></span>
+				</button>
+			</span>
+		</form>
+	</div>
+</div>
