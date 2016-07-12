@@ -3,7 +3,7 @@
 	angular.module('subtlist', ['ngRoute', 'ngCookies'])
 
 	// database service
-	.service('dbService', ['$http', function ($http) {
+	.service('dbService', ['$http', '$q', function ($http, $q) {
 		// private variables
 
 		var listDBUrl = 'list_crud.php',
@@ -12,7 +12,13 @@
 		// public functions
 
 		this.canEdit = function () {
-			return $http.post(listDBUrl, {can_edit: true});
+			var defer = $q.defer();
+			$http.post(listDBUrl, {can_edit: true}).then(function (response) {
+				defer.resolve(response.data === 'success');
+			}, function () {
+				defer.resolve(false);
+			});
+			return defer.promise;
 		};
 
 		this.createList = function (title, subtitle) {
@@ -44,7 +50,11 @@
 		};
 
 		this.readListItems = function () {
-			return $http.post(listItemDBUrl, {read: true});
+			return $http.post(
+				listItemDBUrl,
+				{read: true},
+				{params: {timestamp: new Date().getTime()}}
+			);
 		};
 
 		this.updateListItem = function (id, item) {
@@ -61,7 +71,7 @@
 	}])
 
 	// list service
-	.service('listService', ['dbService', function (dbService) {
+	.service('listService', ['dbService', '$cookies', function (dbService, $cookies) {
 		// private members
 
 		var _title = '',
@@ -69,16 +79,35 @@
 			_items = [],
 			_done = 0;
 
-		function pullItems() {
+		function fetchItems() {
 			dbService.readListItems().then(function (response) {
-				
+				var i;
+
+				if (response.data !== 'failure') {
+					_items = [];
+					for (i = 0; i < response.data.length; i++) {
+						_items[i] = {
+							id: response.data[i].id,
+							name: {
+								database: response.data[i].item,
+								input: response.data[i].item
+							},
+							order_index: response.data[i].order_index,
+							done: ($cookies.get(response.data[i].item + response.data[i].id) === 'true')
+						};
+					}
+				}
 			});
 		}
 
 		// getters & setters
 
 		this.setTitle = function (title) {
-			_title = title;
+			dbService.updateList(title, _subtitle).then(function (response) {
+				if (response.data === 'success') {
+					_title = title;
+				}
+			});
 		};
 
 		this.getTitle = function () {
@@ -100,11 +129,21 @@
 		// public functions
 
 		this.addItem = function (item) {
-			_items.push(item);
+			dbService.createListItem(
+				item, _list[_list.length - 1].order_index + 1
+			).then(function (response) {
+				if (response.data === 'success') {
+					_items.push(item);
+				}
+			});
 		};
 
 		this.removeItem = function (index) {
-			_items.splice(index, 1);
+			dbService.deleteListItem(_list[index].id).then(function (response) {
+				if (response.data === 'success') {
+					_items.splice(index, 1);
+				}
+			});
 		};
 	}])
 
