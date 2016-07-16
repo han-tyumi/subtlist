@@ -15,58 +15,128 @@
 			var defer = $q.defer();
 			$http.post(listDBUrl, {can_edit: true}).then(function (response) {
 				defer.resolve(response.data === 'success');
-			}, function () {
-				defer.resolve(false);
+			}, function (response) {
+				defer.reject(response);
 			});
 			return defer.promise;
 		};
 
 		this.createList = function (title, subtitle) {
-			return $http.post(listDBUrl, {
+			var defer = $q.defer();
+			$http.post(listDBUrl, {
 				create: true,
 				title: title,
 				subtitle: subtitle
+			}).then(function (response) {
+				if (response.data === 'success') {
+					defer.resolve();
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
 			});
+			return defer.promise;
 		};
 
 		this.readList = function () {
-			return $http.post(listDBUrl, {read: true});
+			var defer = $q.defer();
+			$http.post(listDBUrl, {read: true}).then(function (response) {
+				if (response.data !== 'failure') {
+					defer.resolve(response.data);
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
+			});
+			return defer.promise;
 		};
 
 		this.updateList = function (title, subtitle) {
-			return $http.post(listDBUrl, {
+			var defer = $q.defer();
+			$http.post(listDBUrl, {
 				update: true,
 				title: title,
 				subtitle: subtitle
+			}).then(function (response) {
+				if (response.data === 'success') {
+					defer.resolve();
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
 			});
+			return defer.promise;
 		};
 
 		this.createListItem = function (item, orderIndex) {
-			return $http.post(listItemDBUrl, {
+			var defer = $q.defer();
+			$http.post(listItemDBUrl, {
 				create: true,
 				item: item,
 				order_index: orderIndex
+			}).then(function (response) {
+				if (response.data === 'success') {
+					defer.resolve();
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
 			});
+			return defer.promise;
 		};
 
 		this.readListItems = function () {
-			return $http.post(
+			var defer = $q.defer();
+			$http.post(
 				listItemDBUrl,
 				{read: true},
 				{params: {timestamp: new Date().getTime()}}
-			);
+			).then(function (response) {
+				if (response.data !== 'failure') {
+					defer.resolve(response.data);
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
+			});
+			return defer.promise;
 		};
 
 		this.updateListItem = function (id, item) {
-			return $http.post(listItemDBUrl, {
+			var defer = $q.defer();
+			$http.post(listItemDBUrl, {
 				update: true,
 				id: id,
 				item: item
+			}).then(function (response) {
+				if (response.data === 'success') {
+					defer.resolve();
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
 			});
+			return defer.promise;
 		};
 
 		this.deleteListItem = function (id) {
-			return $http.post(listItemDBUrl, {delete: true});
+			var defer = $q.defer();
+			$http.post(listItemDBUrl, {delete: true}).then(function (response) {
+				if (response.data === 'success') {
+					defer.resolve();
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
+			});
+			return defer.promise;
 		};
 	}])
 
@@ -80,33 +150,37 @@
 			_done = 0;
 
 		function fetchItems() {
-			dbService.readListItems().then(function (response) {
+			dbService.readListItems().then(function (data) {
 				var i;
 
-				if (response.data !== 'failure') {
-					_items = [];
-					for (i = 0; i < response.data.length; i++) {
-						_items[i] = {
-							id: response.data[i].id,
-							name: {
-								database: response.data[i].item,
-								input: response.data[i].item
-							},
-							order_index: response.data[i].order_index,
-							done: ($cookies.get(response.data[i].item + response.data[i].id) === 'true')
-						};
-					}
+				_items = [];
+				for (i = 0; i < data.length; i++) {
+					_items[i] = {
+						id: data[i].id,
+						name: {
+							database: data[i].item,
+							input: data[i].item
+						},
+						order_index: data[i].order_index,
+						done: ($cookies.get(data[i].item + data[i].id) === 'true')
+					};
 				}
+			});
+		}
+
+		function fetchSubtlist() {
+			fetchItems();
+			dbService.readList().then(function (data) {
+				_title = data.title;
+				_subtitle = data.subtitle;
 			});
 		}
 
 		// getters & setters
 
 		this.setTitle = function (title) {
-			dbService.updateList(title, _subtitle).then(function (response) {
-				if (response.data === 'success') {
-					_title = title;
-				}
+			dbService.updateList(title, _subtitle).then(function () {
+				_title = title;
 			});
 		};
 
@@ -115,7 +189,9 @@
 		};
 
 		this.setSubtitle = function (subtitle) {
-			_subtitle = subtitle;
+			dbService.updateList(_title, subtitle).then(function () {
+				_subtitle = subtitle;
+			});
 		};
 
 		this.getSubtitle = function () {
@@ -130,19 +206,29 @@
 
 		this.addItem = function (item) {
 			dbService.createListItem(
-				item, _list[_list.length - 1].order_index + 1
-			).then(function (response) {
-				if (response.data === 'success') {
-					_items.push(item);
-				}
+				item, _items[_items.length - 1].order_index + 1
+			).then(function () {
+				_items.push({
+					id: -1,
+					name: {
+						database: data[i].item,
+						input: data[i].item
+					},
+					order_index: data[i].order_index,
+					done: ($cookies.get(data[i].item + data[i].id) === 'true')
+				});
+			});
+		};
+
+		this.updateItem = function (item, index) {
+			dbService.updateListItem(_list[index].id, item).then(function () {
+				_items[index].name = item;
 			});
 		};
 
 		this.removeItem = function (index) {
-			dbService.deleteListItem(_list[index].id).then(function (response) {
-				if (response.data === 'success') {
-					_items.splice(index, 1);
-				}
+			dbService.deleteListItem(_list[index].id).then(function () {
+				_items.splice(index, 1);
 			});
 		};
 	}])
