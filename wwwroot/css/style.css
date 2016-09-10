@@ -14,3 +14,11 @@ body {
 .icon {
 	float: right;
 }
+
+.form-group {
+	margin-bottom: 5px;
+}
+
+.form-group:last-of-type {
+	margin-bottom: auto;
+}

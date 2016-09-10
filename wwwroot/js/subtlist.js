@@ -153,8 +153,14 @@
 		// private members
 
 		// list variables
-		var _title = '',
-			_subtitle = '',
+		var _title = {
+				database: '',
+				input: ''
+			},
+			_subtitle = {
+				database: '',
+				input: ''
+			},
 			_items = [],
 			_canEdit = false,
 			_done = 0;
@@ -196,8 +202,14 @@
 		function fetchSubtlist() {
 			var defer = $q.defer();
 			dbService.readList().then(function (data) {
-				_title = data.title;
-				_subtitle = data.subtitle;
+				_title = {
+					database: data.title,
+					input: data.title
+				};
+				_subtitle = {
+					database: data.subtitle,
+					input: data.subtitle
+				};
 				defer.resolve();
 			});
 			return defer.promise;
@@ -206,8 +218,8 @@
 		// getters & setters
 
 		this.setTitle = function (title) {
-			dbService.updateList(title, _subtitle).then(function () {
-				_title = title;
+			dbService.updateList(title, _subtitle.databse).then(function () {
+				_title.database = title;
 			});
 		};
 
@@ -216,8 +228,8 @@
 		};
 
 		this.setSubtitle = function (subtitle) {
-			dbService.updateList(_title, subtitle).then(function () {
-				_subtitle = subtitle;
+			dbService.updateList(_title.database, subtitle).then(function () {
+				_subtitle.database = subtitle;
 			});
 		};
 
@@ -235,15 +247,20 @@
 		this.init = function () {
 			var defer = $q.defer(),
 				listReady = false,
-				itemsReady = false;
+				itemsReady = false,
+				editReady = false;
 
 			// checks if subtlist is initialized
 			function resolve() {
-				if (listReady && itemsReady) {
+				if (editReady && listReady && itemsReady) {
 					defer.resolve();
 				}
 			}
 
+			fetchPermission().then(function () {
+				editReady = true;
+				resolve();
+			});
 			fetchSubtlist().then(function () {
 				listReady = true;
 				resolve();
@@ -362,14 +379,13 @@
 	}])
 
 	// edit controller
-	.controller('editListController', ['$scope', '$location', 'dbService', 'listService',
-	function ($scope, $location, dbService, listService) {
+	.controller('editListController', ['$scope', '$location', 'listService', function ($scope, $location, listService) {
 		// private methods
 
 		// initializes the edit controller
 		(function init() {
 			// check if editable
-			if (!dbService.canEdit()) {
+			if (!listService.canEdit()) {
 				$location.path('/view');
 			}
 
@@ -379,6 +395,16 @@
 		})();
 
 		// public methods
+
+		// update list title
+		$scope.updateTitle = function (title) {
+			listService.setTitle(title);
+		};
+
+		// update list subtitle
+		$scope.updateSubtitle = function (subtitle) {
+			listService.setSubtitle(subtitle);
+		};
 
 		// create new list item
 		$scope.addItem = function (item) {

@@ -1,9 +1,21 @@
 <div class="panel panel-default">
 	<div class="panel-heading">
-		<div class="form-group">
-			<input type="text" class="form-control" placeholder="Title" ng-model="list.title">
-		</div>
-		<input type="text" class="form-control" placeholder="Subtitle" ng-model="list.subtitle">
+		<form class="form-group" ng-class="{'has-error input-group': list.title.database !== list.title.input}" ng-submit="updateTitle(list.title.input)">
+			<input type="text" class="form-control" ng-model="list.title.input">
+			<span class="input-group-btn">
+				<button class="btn btn-success" type="submit" ng-if="list.title.database !== list.title.input">
+					<span class="glyphicon glyphicon-floppy-save"></span>
+				</button>
+			</span>
+		</form>
+		<form class="form-group" ng-class="{'has-error input-group': list.subtitle.database !== list.subtitle.input}" ng-submit="updateSubtitle(list.subtitle.input)">
+			<input type="text" class="form-control" ng-model="list.subtitle.input">
+			<span class="input-group-btn">
+				<button class="btn btn-success" type="submit" ng-if="list.subtitle.database !== list.subtitle.input">
+					<span class="glyphicon glyphicon-floppy-save"></span>
+				</button>
+			</span>
+		</form>
 	</div>
 	<ul class="list-group">
 		<li class="list-group-item" ng-repeat="item in list.items">

@@ -1,6 +1,6 @@
 <div class="panel panel-default">
 	<div class="panel-heading">
-		<h1 class="panel-title">{{list.title}} [{{view.numDone}}/{{list.items.length}}]<br/><small>{{list.subtitle}}</small></h1>
+		<h1 class="panel-title">{{list.title.database}} [{{view.numDone}}/{{list.items.length}}]<br/><small>{{list.subtitle.database}}</small></h1>
 	</div>
 	<ul class="list-group">
 		<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': item.done}" ng-repeat="item in list.items">
