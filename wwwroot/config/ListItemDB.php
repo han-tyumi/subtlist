@@ -16,7 +16,7 @@ class ListItemDB {
 		$sql = "INSERT INTO `{$this->table}`(`item`, `list_id`, `order_index`) VALUES (:item,:list_id,:order_index)";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":item" => $item, ":list_id" => $_SESSION["id"], ":order_index" => $order_index))) {
-			return true;
+			return $this->conn->lastInsertId();
 		} else {
 			return false;
 		}

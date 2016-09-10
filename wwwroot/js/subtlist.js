@@ -6,11 +6,13 @@
 	.service('dbService', ['$http', '$q', function ($http, $q) {
 		// private variables
 
+		// database crud URLs
 		var listDBUrl = 'list_crud.php',
 			listItemDBUrl = 'list_item_crud.php';
 
 		// public functions
 
+		// returns whether the user has permission to edit the list
 		this.canEdit = function () {
 			var defer = $q.defer();
 			$http.post(listDBUrl, {can_edit: true}).then(function (response) {
@@ -21,6 +23,7 @@
 			return defer.promise;
 		};
 
+		// creates a new list in the list database
 		this.createList = function (title, subtitle) {
 			var defer = $q.defer();
 			$http.post(listDBUrl, {
@@ -39,6 +42,7 @@
 			return defer.promise;
 		};
 
+		// reads in the list associated with the url id from the database
 		this.readList = function () {
 			var defer = $q.defer();
 			$http.post(listDBUrl, {read: true}).then(function (response) {
@@ -53,6 +57,7 @@
 			return defer.promise;
 		};
 
+		// updates the associated list in the database
 		this.updateList = function (title, subtitle) {
 			var defer = $q.defer();
 			$http.post(listDBUrl, {
@@ -71,6 +76,7 @@
 			return defer.promise;
 		};
 
+		// adds a new list item to the list item database
 		this.createListItem = function (item, orderIndex) {
 			var defer = $q.defer();
 			$http.post(listItemDBUrl, {
@@ -78,8 +84,8 @@
 				item: item,
 				order_index: orderIndex
 			}).then(function (response) {
-				if (response.data === 'success') {
-					defer.resolve();
+				if (response.data !== 'failure') {
+					defer.resolve(response.data);
 				} else {
 					defer.reject(response);
 				}
@@ -89,6 +95,7 @@
 			return defer.promise;
 		};
 
+		// rreads all the list itmes associated with the current list
 		this.readListItems = function () {
 			var defer = $q.defer();
 			$http.post(
@@ -107,6 +114,7 @@
 			return defer.promise;
 		};
 
+		// updates a single list item in the database
 		this.updateListItem = function (id, item) {
 			var defer = $q.defer();
 			$http.post(listItemDBUrl, {
@@ -125,6 +133,7 @@
 			return defer.promise;
 		};
 
+		// deletes a single list item from the database
 		this.deleteListItem = function (id) {
 			var defer = $q.defer();
 			$http.post(listItemDBUrl, {delete: true}).then(function (response) {
@@ -141,15 +150,29 @@
 	}])
 
 	// list service
-	.service('listService', ['dbService', '$cookies', function (dbService, $cookies) {
+	.service('listService', ['dbService', '$q', '$cookies', function (dbService, $q, $cookies) {
 		// private members
 
+		// list variables
 		var _title = '',
 			_subtitle = '',
 			_items = [],
+			_canEdit = false,
 			_done = 0;
 
+		// sets whether the user can edit the list
+		function fetchPermission() {
+			var defer = $q.defer();
+			dbService.canEdit().then(function (data) {
+				_canEdit = data;
+				defer.resolve();
+			});
+			return defer.promise;
+		}
+
+		// fetches the associated list items from the database
 		function fetchItems() {
+			var defer = $q.defer();
 			dbService.readListItems().then(function (data) {
 				var i;
 
@@ -165,15 +188,20 @@
 						done: ($cookies.get(data[i].item + data[i].id) === 'true')
 					};
 				}
+				defer.resolve();
 			});
+			return defer.promise;
 		}
 
+		// fetches both the list information from the database
 		function fetchSubtlist() {
-			fetchItems();
+			var defer = $q.defer();
 			dbService.readList().then(function (data) {
 				_title = data.title;
 				_subtitle = data.subtitle;
+				defer.resolve();
 			});
+			return defer.promise;
 		}
 
 		// getters & setters
@@ -204,30 +232,64 @@
 
 		// public functions
 
+		// initializes the subtlist
+		this.init = function () {
+			var defer = $q.defer(),
+				listReady = false,
+				itemsReady = false;
+
+			// checks if subtlist is initialized
+			function resolve() {
+				if (listReady && itemsReady) {
+					defer.resolve();
+				}
+			}
+
+			fetchSubtlist().then(function () {
+				listReady = true;
+				resolve();
+			});
+			fetchItems().then(function () {
+				itemsReady = true;
+				resolve();
+			});
+
+			return defer.promise;
+		};
+
+		// returns whether or not the list can be edited
+		this.canEdit = function () {
+			return _canEdit;
+		};
+
+		// adds a new item to the list
 		this.addItem = function (item) {
+			var order_index = _items[_items.length - 1].order_index + 1;
 			dbService.createListItem(
-				item, _items[_items.length - 1].order_index + 1
-			).then(function () {
+				item, order_index
+			).then(function (data) {
 				_items.push({
-					id: -1,
+					id: data.id,
 					name: {
-						database: data[i].item,
-						input: data[i].item
+						database: item,
+						input: item
 					},
-					order_index: data[i].order_index,
-					done: ($cookies.get(data[i].item + data[i].id) === 'true')
+					order_index: order_index,
+					done: false
 				});
 			});
 		};
 
-		this.updateItem = function (item, index) {
-			dbService.updateListItem(_list[index].id, item).then(function () {
-				_items[index].name = item;
+		// updates an item in the list
+		this.updateItem = function (index, item) {
+			dbService.updateListItem(_items[index].id, item).then(function () {
+				_items[index].name.database = item;
 			});
 		};
 
-		this.removeItem = function (index) {
-			dbService.deleteListItem(_list[index].id).then(function () {
+		// removes an item from the list
+		this.deleteItem = function (index) {
+			dbService.deleteListItem(_items[index].id).then(function () {
 				_items.splice(index, 1);
 			});
 		};
@@ -250,19 +312,21 @@
 	}])
 
 	// main controller
-	.controller('mainController', ['$scope', function ($scope) {
+	.controller('mainController', ['$scope', 'listService', function ($scope, listService) {
 		// private methods
 
 		// initializes the main controller
-		function init() {
-			$scope.list = {
-				title: '',
-				subtitle: '',
-				items: []
-			};
-		}
-
-		init();
+		(function init() {
+			// initialize list service
+			listService.init().then(function () {
+				// initialize common variables
+				$scope.list = {
+					title: listService.getTitle(),
+					subtitle: listService.getSubtitle(),
+					items: listService.getItems()
+				};
+			});
+		})();
 	}])
 
 	// view controller
@@ -270,11 +334,11 @@
 		// private members
 
 		// initializes the view controller
-		function init() {
+		(function init() {
 			$scope.view = {
 				numDone: 0
 			};
-		}
+		})();
 
 		// public methods
 
@@ -293,16 +357,15 @@
 				{expires: expires}
 			);
 		};
-
-		init();
 	}])
 
 	// edit controller
-	.controller('editListController', ['$scope', '$location', 'dbService', function ($scope, $location, dbService) {
+	.controller('editListController', ['$scope', '$location', 'dbService', 'listService',
+	function ($scope, $location, dbService, listService) {
 		// private methods
 
 		// initializes the edit controller
-		function init() {
+		(function init() {
 			// check if editable
 			if (!dbService.canEdit()) {
 				$location.path('/view');
@@ -311,28 +374,27 @@
 			$scope.edit = {
 				input: ''
 			};
-		}
+		})();
 
 		// public methods
 
 		// create new list item
-		$scope.create = function () {
-
+		$scope.addItem = function (item) {
+			listService.addItem(item);
 		};
 
 		// update list item
-		$scope.update = function () {
-
+		$scope.updateItem = function (index, item) {
+			listService.updateItem(index, item);
 		};
 
 		// delete list item
-		$scope.delete = function () {
-
+		$scope.deleteItem = function (index) {
+			listService.deleteItem(index);
 		};
-
-		init();
 	}]);
 })();
+
 /*
 (function () {
 	// create app
