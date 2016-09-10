@@ -7,15 +7,14 @@
 		// private variables
 
 		// database crud URLs
-		var listDBUrl = 'list_crud.php',
-			listItemDBUrl = 'list_item_crud.php';
+		var dbUrl = 'subtlist_crud.php';
 
 		// public functions
 
 		// returns whether the user has permission to edit the list
 		this.canEdit = function () {
 			var defer = $q.defer();
-			$http.post(listDBUrl, {can_edit: true}).then(function (response) {
+			$http.post(dbUrl, {canEdit: true}).then(function (response) {
 				defer.resolve(response.data === 'success');
 			}, function (response) {
 				defer.reject(response);
@@ -26,8 +25,8 @@
 		// creates a new list in the list database
 		this.createList = function (title, subtitle) {
 			var defer = $q.defer();
-			$http.post(listDBUrl, {
-				create: true,
+			$http.post(dbUrl, {
+				createList: true,
 				title: title,
 				subtitle: subtitle
 			}).then(function (response) {
@@ -45,7 +44,7 @@
 		// reads in the list associated with the url id from the database
 		this.readList = function () {
 			var defer = $q.defer();
-			$http.post(listDBUrl, {read: true}).then(function (response) {
+			$http.post(dbUrl, {readList: true}).then(function (response) {
 				if (response.data !== 'failure') {
 					defer.resolve(response.data);
 				} else {
@@ -60,8 +59,8 @@
 		// updates the associated list in the database
 		this.updateList = function (title, subtitle) {
 			var defer = $q.defer();
-			$http.post(listDBUrl, {
-				update: true,
+			$http.post(dbUrl, {
+				updateList: true,
 				title: title,
 				subtitle: subtitle
 			}).then(function (response) {
@@ -79,8 +78,8 @@
 		// adds a new list item to the list item database
 		this.createListItem = function (item, orderIndex) {
 			var defer = $q.defer();
-			$http.post(listItemDBUrl, {
-				create: true,
+			$http.post(dbUrl, {
+				createItem: true,
 				item: item,
 				order_index: orderIndex
 			}).then(function (response) {
@@ -99,8 +98,8 @@
 		this.readListItems = function () {
 			var defer = $q.defer();
 			$http.post(
-				listItemDBUrl,
-				{read: true},
+				dbUrl,
+				{readItem: true},
 				{params: {timestamp: new Date().getTime()}}
 			).then(function (response) {
 				if (response.data !== 'failure') {
@@ -117,8 +116,8 @@
 		// updates a single list item in the database
 		this.updateListItem = function (id, item) {
 			var defer = $q.defer();
-			$http.post(listItemDBUrl, {
-				update: true,
+			$http.post(dbUrl, {
+				updateItem: true,
 				id: id,
 				item: item
 			}).then(function (response) {
@@ -136,7 +135,7 @@
 		// deletes a single list item from the database
 		this.deleteListItem = function (id) {
 			var defer = $q.defer();
-			$http.post(listItemDBUrl, {delete: true}).then(function (response) {
+			$http.post(dbUrl, {deleteItem: true}).then(function (response) {
 				if (response.data === 'success') {
 					defer.resolve();
 				} else {
@@ -264,7 +263,8 @@
 
 		// adds a new item to the list
 		this.addItem = function (item) {
-			var order_index = _items[_items.length - 1].order_index + 1;
+			var defer = $q.defer();
+			var order_index = +_items[_items.length - 1].order_index + 1;
 			dbService.createListItem(
 				item, order_index
 			).then(function (data) {
@@ -277,7 +277,9 @@
 					order_index: order_index,
 					done: false
 				});
+				defer.resolve();
 			});
+			return defer.promise;
 		};
 
 		// updates an item in the list
@@ -380,7 +382,9 @@
 
 		// create new list item
 		$scope.addItem = function (item) {
-			listService.addItem(item);
+			listService.addItem(item).then(function () {
+				$scope.edit.input = '';
+			});
 		};
 
 		// update list item
