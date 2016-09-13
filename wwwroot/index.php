@@ -1,10 +1,10 @@
 <?php
+session_start();
 require_once("token.php");
 if (!isset($_GET["id"])) {
 	header("Location: ./" . getToken(10));
 	exit;
 } else {
-	session_start();
 	$_SESSION["id"] = $_GET["id"];
 }
 ?>
@@ -41,7 +41,7 @@ if (!isset($_GET["id"])) {
 					<ul class="nav navbar-nav">
 						<li><a href=".">New</a></li>
 						<li><a href="#view">View</a></li>
-						<li><a href="#edit">Edit</a></li>
+						<li ng-if="list.canEdit.value"><a href="#edit">Edit</a></li>
 					</ul>
 				</div>
 			</div>

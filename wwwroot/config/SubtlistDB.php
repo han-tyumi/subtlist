@@ -8,12 +8,10 @@ class SubtlistDB {
 	private $listTable = "list";
 	private $itemTable = "list_item";
 	private $conn;
-	private $readOnly = true;
 
 	// initialize list database
 	public function __construct() {
 		$this->conn = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
-		$this->readOnly = !$this->canEdit();
 		session_start();
 	}
 
@@ -21,17 +19,35 @@ class SubtlistDB {
 
 	// returns where the list is able to be edited
 	public function canEdit() {
-		$sql = "SELECT EXISTS(SELECT 1 FROM `{$this->listTable}` WHERE `id`=:id AND `key`=:key)";
+		$sql = "SELECT `key` FROM `{$this->listTable}` WHERE `id`=:id";
 		$q = $this->conn->prepare($sql);
-		if ($q->execute(array(":id" => $_SESSION["id"], ":key" => $_COOKIE[$_SESSION["id"] . "rw"]))) {
-			if ($q->rowCount() > 0) {
+		if ($q->execute(array(":id" => $_SESSION["id"]))) {
+			$key = $q->fetchColumn();
+			if ($key) {
+				if ($_COOKIE[$_SESSION["id"] . "rw"] == $key) {
+					return true;
+				}
+			} elseif ($this->isNew()) {
 				return true;
-			} else {
-				return false;
 			}
+			return false;
 		} else {
 			return false;
 		}
+	}
+
+	// returns if new
+	public function isNew() {
+		$sql = "SELECT COUNT(*) FROM `{$this->listTable}` WHERE `id`=:id";
+		$q = $this->conn->prepare($sql);
+		if ($q->execute(array(":id" => $_SESSION["id"]))) {
+			if ($q->fetchColumn()) {
+				return false;
+			} else {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	// creates a new list
@@ -62,7 +78,7 @@ class SubtlistDB {
 
 	// updates the list's title and subtitle
 	public function updateList($title, $subtitle) {
-		if ($this->readOnly) {
+		if (!$this->canEdit()) {
 			return false;
 		}
 		$sql = "UPDATE `{$this->listTable}` SET `title`=:title,`subtitle`=:subtitle WHERE `id`=:id";
@@ -76,7 +92,7 @@ class SubtlistDB {
 
 	// deletes a list
 	public function deleteList() {
-		if ($this->readOnly) {
+		if (!$this->canEdit()) {
 			return false;
 		}
 		$sql = "DELETE FROM `{$this->listTable}` WHERE `id`=:id";
@@ -92,7 +108,7 @@ class SubtlistDB {
 
 	// creates a new list item
 	public function createItem($item, $order_index) {
-		if ($this->readOnly) {
+		if (!$this->canEdit()) {
 			return false;
 		}
 		$sql = "INSERT INTO `{$this->itemTable}`(`item`, `list_id`, `order_index`) VALUES (:item,:list_id,:order_index)";
@@ -120,7 +136,7 @@ class SubtlistDB {
 
 	// updates a specified list item
 	public function updateItem($id, $item) {
-		if ($this->readOnly) {
+		if (!$this->canEdit()) {
 			return false;
 		}
 		$sql = "UPDATE `{$this->itemTable}` SET `item`=:item WHERE `id`=:id";
@@ -134,7 +150,7 @@ class SubtlistDB {
 
 	// deletes a specified list item
 	public function deleteItem($id) {
-		if ($this->readOnly) {
+		if (!$this->canEdit()) {
 			return false;
 		}
 		$sql = "DELETE FROM `{$this->itemTable}` WHERE `id`=:id";

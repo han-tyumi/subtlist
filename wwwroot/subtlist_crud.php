@@ -10,6 +10,12 @@ if (isset($data->canEdit)) {
 	} else {
 		echo "failure";
 	}
+} elseif (isset($data->isNew)) {
+	if ($db->isNew()) {
+		echo "success";
+	} else {
+		echo "failure";
+	}
 } elseif (isset($data->createList)) {
 	if ($db->createList($data->title, $data->subtitle)) {
 		echo "success";

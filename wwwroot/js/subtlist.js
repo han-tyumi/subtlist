@@ -22,6 +22,17 @@
 			return defer.promise;
 		};
 
+		// returns whether the list is new
+		this.isNew = function () {
+			var defer = $q.defer();
+			$http.post(dbUrl, {isNew: true}).then(function (response) {
+				defer.resolve(response.data === 'success');
+			}, function (response) {
+				defer.reject(response);
+			});
+			return defer.promise;
+		};
+
 		// creates a new list in the list database
 		this.createList = function (title, subtitle) {
 			var defer = $q.defer();
@@ -94,7 +105,7 @@
 			return defer.promise;
 		};
 
-		// rreads all the list itmes associated with the current list
+		// reads all the list itmes associated with the current list
 		this.readListItems = function () {
 			var defer = $q.defer();
 			$http.post(
@@ -162,16 +173,33 @@
 				input: ''
 			},
 			_items = [],
-			_canEdit = false,
-			_done = 0;
+			_isNew = {value: false},
+			_canEdit = {value: false};
 
 		// sets whether the user can edit the list
-		function fetchPermission() {
-			var defer = $q.defer();
+		function fetchPermissions() {
+			var defer = $q.defer(),
+				canEditDone = false,
+				isNewDone = false;
+
+			function resolve() {
+				if (canEditDone && isNewDone) {
+					defer.resolve();
+				}
+			}
+
 			dbService.canEdit().then(function (data) {
-				_canEdit = data;
-				defer.resolve();
+				_canEdit.value = data;
+				canEditDone = true;
+				resolve();
 			});
+
+			dbService.isNew().then(function (data) {
+				_isNew.value = data;
+				isNewDone = true;
+				resolve();
+			});
+
 			return defer.promise;
 		}
 
@@ -218,7 +246,10 @@
 		// getters & setters
 
 		this.setTitle = function (title) {
-			dbService.updateList(title, _subtitle.databse).then(function () {
+			if (_isNew.value) {
+				return;
+			}
+			dbService.updateList(title, _subtitle.database).then(function () {
 				_title.database = title;
 			});
 		};
@@ -228,6 +259,9 @@
 		};
 
 		this.setSubtitle = function (subtitle) {
+			if (_isNew.value) {
+				return;
+			}
 			dbService.updateList(_title.database, subtitle).then(function () {
 				_subtitle.database = subtitle;
 			});
@@ -246,28 +280,38 @@
 		// initializes the subtlist
 		this.init = function () {
 			var defer = $q.defer(),
-				listReady = false,
-				itemsReady = false,
-				editReady = false;
+				listDone = false,
+				itemsDone = false;
 
 			// checks if subtlist is initialized
 			function resolve() {
-				if (editReady && listReady && itemsReady) {
+				if (listDone && itemsDone) {
 					defer.resolve();
 				}
 			}
 
-			fetchPermission().then(function () {
-				editReady = true;
-				resolve();
-			});
-			fetchSubtlist().then(function () {
-				listReady = true;
-				resolve();
-			});
-			fetchItems().then(function () {
-				itemsReady = true;
-				resolve();
+			fetchPermissions().then(function () {
+				if (_isNew.value) {
+					_title = {
+						database: '',
+						input: ''
+					};
+					_subtitle = {
+						database: '',
+						input: ''
+					};
+					_items = [];
+					defer.resolve();
+				} else {
+					fetchSubtlist().then(function () {
+						listDone = true;
+						resolve();
+					});
+					fetchItems().then(function () {
+						itemsDone = true;
+						resolve();
+					});
+				}
 			});
 
 			return defer.promise;
@@ -278,24 +322,48 @@
 			return _canEdit;
 		};
 
+		this.isNew = function () {
+			return _isNew;
+		};
+
 		// adds a new item to the list
 		this.addItem = function (item) {
 			var defer = $q.defer();
-			var order_index = +_items[_items.length - 1].order_index + 1;
-			dbService.createListItem(
-				item, order_index
-			).then(function (data) {
-				_items.push({
-					id: data.id,
-					name: {
-						database: item,
-						input: item
-					},
-					order_index: order_index,
-					done: false
+
+			function addItem() {
+				var order_index = 1;
+				if (_items.length > 0) {
+					order_index = +_items[_items.length - 1].order_index + 1;
+				}
+				dbService.createListItem(
+					item, order_index
+				).then(function (data) {
+					_items.push({
+						id: data.id,
+						name: {
+							database: item,
+							input: item
+						},
+						order_index: order_index,
+						done: false
+					});
+					defer.resolve();
 				});
-				defer.resolve();
-			});
+			}
+
+			if (_isNew.value) {
+				dbService.createList(
+					_title.input, _subtitle.input
+				).then(function () {
+					_title.database = _title.input;
+					_subtitle.database = _subtitle.input;
+					_isNew.value = false;
+					addItem();
+				});
+			} else {
+				addItem();
+			}
+
 			return defer.promise;
 		};
 
@@ -331,7 +399,7 @@
 	}])
 
 	// main controller
-	.controller('mainController', ['$scope', 'listService', function ($scope, listService) {
+	.controller('mainController', ['$scope', '$location', 'listService', function ($scope, $location, listService) {
 		// private methods
 
 		// initializes the main controller
@@ -342,8 +410,14 @@
 				$scope.list = {
 					title: listService.getTitle(),
 					subtitle: listService.getSubtitle(),
-					items: listService.getItems()
+					items: listService.getItems(),
+					canEdit: listService.canEdit(),
+					isNew: listService.isNew()
 				};
+
+				if ($scope.list.isNew.value) {
+					$location.path('/edit');
+				}
 			});
 		})();
 	}])
@@ -379,16 +453,11 @@
 	}])
 
 	// edit controller
-	.controller('editListController', ['$scope', '$location', 'listService', function ($scope, $location, listService) {
+	.controller('editListController', ['$scope', 'listService', function ($scope, listService) {
 		// private methods
 
 		// initializes the edit controller
 		(function init() {
-			// check if editable
-			if (!listService.canEdit()) {
-				$location.path('/view');
-			}
-
 			$scope.edit = {
 				input: ''
 			};
@@ -410,6 +479,7 @@
 		$scope.addItem = function (item) {
 			listService.addItem(item).then(function () {
 				$scope.edit.input = '';
+				$scope.$apply();
 			});
 		};
 
@@ -424,187 +494,3 @@
 		};
 	}]);
 })();
-
-/*
-(function () {
-	// create app
-	var theListApp = angular.module('subtlist', ['ngRoute', 'ngCookies']);
-
-	// set controller
-	theListApp.controller('main', ['$scope', '$http', '$cookies', function ($scope, $http, $cookies) {
-		// private members
-
-		// gets the number of done movies
-		function getNumDone() {
-			var i, num = 0;
-			for (i = 0; i < $scope.list.items.length; i++) {
-				if ($scope.list.items[i].done) {
-					num++;
-				}
-			}
-			return num;
-		}
-
-		// updates statistical variables
-		function update() {
-			$scope.list.numDone = getNumDone();
-		}
-
-		function canEdit(complete) {
-			$http.post('list_crud.php', {can_edit: true}).then(function (response) {
-				if (response.data === 'success') {
-					$scope.list.edit = true;
-					$scope.list.mode = 'edit';
-				} else {
-					$scope.list.edit = false;
-				}
-
-				if (complete) {
-					complete(response);
-				}
-			});
-		}
-
-		function readListItem(complete) {
-			$http.post('list_item_crud.php', {read: true}, {params: {timestamp: new Date().getTime()}}).then(function (response) {
-				var i;
-
-				if (response.data !== 'failure') {
-					$scope.list.items = [];
-					for (i = 0; i < response.data.length; i++) {
-						$scope.list.items[i] = {
-							id: response.data[i].id,
-							name: {
-								database: response.data[i].item,
-								input: response.data[i].item
-							},
-							order_index: response.data[i].order_index,
-							done: ($cookies.get(response.data[i].item + response.data[i].id) === 'true')
-						};
-					}
-					update();
-					$('html, body').scrollTop($(document).height());
-				}
-
-				if (complete) {
-					complete(response);
-				}
-			});
-		}
-
-		function create(complete) {
-			$http.post('list_crud.php', {
-				create: true,
-				title: $scope.list.title,
-				subtitle: $scope.list.subtitle
-			}).then(complete);
-		}
-
-		function readList(complete) {
-			$http.post('list_crud.php', {read: true}).then(function (response) {
-				if (response.data !== 'failure') {
-					$scope.list.created = true;
-					readListItem(complete);
-					canEdit();
-					$scope.list.title = response.data.title;
-					$scope.list.subtitle = response.data.subtitle;
-				} else {
-					$scope.list.edit = true;
-					if (complete) {
-						complete(response);
-					}
-				}
-			});
-		}
-
-		// initializes the controller
-		function init() {
-			$scope.list = {
-				title: '',
-				subtitle: '',
-				items: [],
-				numDone: 0,
-				edit: false,
-				mode: 'view',
-				created: false,
-				input: ''
-			};
-			readList();
-		}
-
-		// public methods
-
-		// adds the specified item to the list
-		$scope.addItem = function () {
-			function add(response) {
-				canEdit(function (response) {
-					if (response.data === 'success') {
-						$http.post('list_item_crud.php', {
-							create: true,
-							item: $scope.list.input,
-							order_index: Number($scope.list.items[$scope.list.items.length - 1].order_index) + 1
-						}).then(function (response) {
-							if (response.data === 'success') {
-								$scope.list.input = '';
-								readListItem();
-							}
-						});
-					}
-				});
-			}
-			if (!$scope.list.created) {
-				create(add);
-			} else {
-				add();
-			}
-		};
-
-		// updates the changed item
-		$scope.updateItem = function (id, item) {
-			canEdit(function (response) {
-				if (response.data === 'success') {
-					$http.post('list_item_crud.php', {update: true, id: id, item: item}).then(function (response) {
-						if (response.data === 'success') {
-							readListItem();
-						}
-					});
-				}
-			});
-		};
-
-		// removes an item from the list
-		$scope.delete = function (id) {
-			canEdit(function (response) {
-				if (response.data === 'success') {
-					$http.post('list_item_crud.php', {delete: true, id: id}).then(function(response) {
-						if (response.data === 'success') {
-							readListItem();
-						}
-					});
-				}
-			});
-		};
-
-		// toggles the passed index and updates progress
-		$scope.toggle = function (index) {
-			var expires = new Date();
-
-			// toggle done status
-			$scope.list.items[index].done = !$scope.list.items[index].done;
-
-			// create cookie
-			expires.setFullYear(expires.getFullYear() + 5);
-			$cookies.put(
-				$scope.list.items[index].name.database + $scope.list.items[index].id,
-				$scope.list.items[index].done,
-				{expires: expires}
-			);
-
-			// update progress
-			update();
-		};
-
-		// initialization
-		init();
-	}]);
-})();*/
