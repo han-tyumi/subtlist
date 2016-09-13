@@ -17,7 +17,7 @@ class SubtlistDB {
 
 	// list functions
 
-	// returns where the list is able to be edited
+	// returns whether the list is able to be edited
 	public function canEdit() {
 		$sql = "SELECT `key` FROM `{$this->listTable}` WHERE `id`=:id";
 		$q = $this->conn->prepare($sql);

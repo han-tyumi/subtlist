@@ -322,6 +322,7 @@
 			return _canEdit;
 		};
 
+		// returns whether the list is new
 		this.isNew = function () {
 			return _isNew;
 		};
@@ -412,8 +413,16 @@
 					subtitle: listService.getSubtitle(),
 					items: listService.getItems(),
 					canEdit: listService.canEdit(),
-					isNew: listService.isNew()
+					isNew: listService.isNew(),
+					numDone: 0
 				};
+
+				var i;
+				for (i = 0; i < $scope.list.items.length; i++) {
+					if ($scope.list.items[i].done) {
+						$scope.list.numDone++;
+					}
+				}
 
 				if ($scope.list.isNew.value) {
 					$location.path('/edit');
@@ -424,15 +433,6 @@
 
 	// view controller
 	.controller('viewListController', ['$scope', '$http', '$cookies', function ($scope, $http, $cookies) {
-		// private members
-
-		// initializes the view controller
-		(function init() {
-			$scope.view = {
-				numDone: 0
-			};
-		})();
-
 		// public methods
 
 		// toggles the passed index and updates progress
@@ -441,6 +441,11 @@
 
 			// toggle done status
 			$scope.list.items[index].done = !$scope.list.items[index].done;
+			if ($scope.list.items[index].done) {
+				$scope.list.numDone++;
+			} else {
+				$scope.list.numDone--;
+			}
 
 			// create cookie
 			expires.setFullYear(expires.getFullYear() + 5);
