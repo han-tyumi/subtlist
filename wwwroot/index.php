@@ -49,6 +49,15 @@ if (!isset($_GET["id"])) {
 		<div class="container">
 			<div ng-view></div>
 		</div>
+		<div class="footer small text-center">
+			<p>
+				Made with lots of love and lines of code by Matt Champagne.
+				<br>
+				Thank you Tess. This wouldn't exist if it wasn't for you.
+				<br>
+				&copy; 2016
+			</p>
+		</div>
 		<script src="lib/js/ios-drag-drop.js"></script>
 		<script src="lib/js/jquery-1.12.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>
