@@ -1,6 +1,6 @@
 (function () {
 	// create app
-	angular.module('subtlist', ['ngRoute', 'ngCookies'])
+	angular.module('subtlist', ['ngRoute', 'ngCookies', 'dndLists'])
 
 	// database service
 	.service('dbService', ['$http', '$q', function ($http, $q) {
@@ -131,6 +131,25 @@
 				updateItem: true,
 				id: id,
 				item: item
+			}).then(function (response) {
+				if (response.data === 'success') {
+					defer.resolve();
+				} else {
+					defer.reject(response);
+				}
+			}, function (response) {
+				defer.reject(response);
+			});
+			return defer.promise;
+		};
+
+		// updates the order_index of a list item
+		this.updateListItemOrder = function (id, order_index) {
+			var defer = $q.defer();
+			$http.post(dbUrl, {
+				updateItemOrder: true,
+				id: id,
+				order_index: order_index
 			}).then(function (response) {
 				if (response.data === 'success') {
 					defer.resolve();
@@ -375,6 +394,24 @@
 			});
 		};
 
+		// updates an item's order in the list
+		this.updateItemOrder = function (indexFrom, indexTo) {
+			var i, indexEnd;
+
+			if (indexFrom > indexTo) {
+				i = indexTo;
+				indexEnd = indexFrom;
+			} else {
+				i = indexFrom;
+				indexEnd = indexTo;
+			}
+
+			for (i; i <= indexEnd; i++) {
+				_items[i].order_index = i;
+				dbService.updateListItemOrder(_items[i].id, i);
+			}
+		};
+
 		// removes an item from the list
 		this.deleteItem = function (index) {
 			dbService.deleteListItem(_items[index].id).then(function () {
@@ -464,7 +501,8 @@
 		// initializes the edit controller
 		(function init() {
 			$scope.edit = {
-				input: ''
+				input: '',
+				indexTo: 0
 			};
 		})();
 
@@ -484,13 +522,27 @@
 		$scope.addItem = function (item) {
 			listService.addItem(item).then(function () {
 				$scope.edit.input = '';
-				$scope.$apply();
 			});
 		};
 
 		// update list item
 		$scope.updateItem = function (index, item) {
 			listService.updateItem(index, item);
+		};
+
+		$scope.dropCallback = function (index, item) {
+			$scope.edit.indexTo = index;
+			return item;
+		};
+
+		// update list item order index
+		$scope.updateItemOrder = function (indexFrom, indexTo) {
+			if (indexFrom > indexTo) {
+				indexFrom--;
+			} else {
+				indexTo--;
+			}
+			listService.updateItemOrder(indexFrom, indexTo);
 		};
 
 		// delete list item

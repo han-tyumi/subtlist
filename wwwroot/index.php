@@ -54,6 +54,7 @@ if (!isset($_GET["id"])) {
 		<script src="lib/js/angular.min.js"></script>
 		<script src="lib/js/angular-route.min.js"></script>
 		<script src="lib/js/angular-cookies.min.js"></script>
+		<script src="lib/js/angular-drag-and-drop-lists.min.js"></script>
 		<script src="js/subtlist.js"></script>
 	</body>
 </html>

@@ -61,6 +61,12 @@ if (isset($data->canEdit)) {
 	} else {
 		echo "failure";
 	}
+} elseif (isset($data->updateItemOrder)) {
+	if ($db->updateItemOrder($data->id, $data->order_index)) {
+		echo "success";
+	} else {
+		echo "failure";
+	}
 } elseif (isset($data->deleteItem)) {
 	if ($db->deleteItem($data->id)) {
 		echo "success";

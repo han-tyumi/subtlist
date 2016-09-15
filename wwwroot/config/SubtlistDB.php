@@ -148,6 +148,20 @@ class SubtlistDB {
 		}
 	}
 
+	// updates an item's order index
+	public function updateItemOrder($id, $order_index) {
+		if (!$this->canEdit()) {
+			return false;
+		}
+		$sql = "UPDATE `{$this->itemTable}` SET `order_index`=:order_index WHERE `id`=:id";
+		$q = $this->conn->prepare($sql);
+		if ($q->execute(array(":order_index" => $order_index, ":id" => $id))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	// deletes a specified list item
 	public function deleteItem($id) {
 		if (!$this->canEdit()) {
