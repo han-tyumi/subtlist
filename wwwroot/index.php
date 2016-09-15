@@ -49,6 +49,7 @@ if (!isset($_GET["id"])) {
 		<div class="container">
 			<div ng-view></div>
 		</div>
+		<script src="lib/js/ios-drag-drop.js"></script>
 		<script src="lib/js/jquery-1.12.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>
 		<script src="lib/js/angular.min.js"></script>

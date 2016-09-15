@@ -22,3 +22,23 @@ body {
 .form-group:last-of-type {
 	margin-bottom: auto;
 }
+
+ul[dnd-list], ul[dnd-list] > li {
+	position: relative;
+}
+
+ul[dnd-list] {
+	min-height: 56px;
+	padding-left: 0px;
+}
+
+ul[dnd-list] .dndDraggingSource {
+	display: none;
+}
+
+ul[dnd-list] .dndPlaceholder {
+    display: block;
+    background-color: #f5f5f5;
+	border-top: 1px solid #ddd;
+    min-height: 56px;
+}

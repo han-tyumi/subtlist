@@ -18,7 +18,7 @@
 		</form>
 	</div>
 	<ul class="list-group" dnd-list="list.items" dnd-drop="dropCallback(index, item)">
-		<li class="list-group-item dndPlaceholder" ng-repeat="item in list.items" dnd-draggable="item" dnd-moved="list.items.splice($index, 1); updateItemOrder($index, edit.indexTo)">
+		<li class="list-group-item" ng-repeat="item in list.items" dnd-draggable="item" dnd-moved="list.items.splice($index, 1); updateItemOrder($index, edit.indexTo)">
 			<form class="input-group" ng-class="{'has-error': item.name.database !== item.name.input}" ng-submit="updateItem($index, item.name.input)">
 				<input type="text" class="form-control" ng-model="item.name.input">
 				<span class="input-group-btn">
