@@ -48,16 +48,33 @@ if (!isset($_GET["id"])) {
 		</nav>
 		<div class="container">
 			<div ng-view></div>
+			<form ng-if="!list.isNew.value">
+				<div class="form-group">
+				<label for="link">Sharable Link</label>
+					<div class="input-group">
+						<span class="input-group-btn">
+							<button class="btn btn-default" type="button" ng-click="copyToClipboard('#link')">Copy</button>
+						</span>
+						<input id="link" readonly type="text" class="form-control" value="<?php echo "http://orillon.com/subtlist/" . $_GET["id"]; ?>">
+					</div>
+				</div>
+			</form>
+			<br>
+			<div class="footer small text-center">
+				<p>
+					Made with lots of love and lines of code.
+					<br>
+					Special thanks to Tess :)
+					<br>
+					&copy; 2016 Matt Champagne
+				</p>
+			</div>
 		</div>
-		<div class="footer small text-center">
-			<p>
-				Made with lots of love and lines of code by Matt Champagne.
-				<br>
-				Thank you Tess. This wouldn't exist if it wasn't for you.
-				<br>
-				&copy; 2016
-			</p>
-		</div>
+		<span id="top-link-block" class="hidden">
+			<a href="#top" class="well well-sm" onclick="$('html,body').animate({scrollTop:0},'slow');return false;">
+		        <i class="glyphicon glyphicon-chevron-up"></i>
+		    </a>
+		</span>
 		<script src="lib/js/ios-drag-drop.js"></script>
 		<script src="lib/js/jquery-1.12.0.min.js"></script>
 		<script src="lib/js/bootstrap.min.js"></script>

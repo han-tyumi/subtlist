@@ -18,7 +18,7 @@
 		</form>
 	</div>
 	<ul class="list-group" dnd-list="list.items" dnd-drop="dropCallback(index, item)">
-		<li class="list-group-item" ng-repeat="item in list.items" dnd-draggable="item" dnd-moved="list.items.splice($index, 1); updateItemOrder($index, edit.indexTo)">
+		<li class="list-group-item" ng-repeat="item in list.items" dnd-draggable="item" dnd-moved="list.items.splice($index, 1); updateItemOrder($index, edit.indexTo)" when-ready="updateTopButton()">
 			<form class="input-group" ng-class="{'has-error': item.name.database !== item.name.input}" ng-submit="updateItem($index, item.name.input)">
 				<input type="text" class="form-control" ng-model="item.name.input">
 				<span class="input-group-btn">
@@ -42,4 +42,16 @@
 			</span>
 		</form>
 	</div>
+</div>
+
+<div class="well text-center">
+	Please DO NOT clear your cookies for this website.
+	<br>
+	This website uses cookies in order to verify your ability to edit your list.
+	<br>
+	Please bookmark this page in order to make edits to your list in the future.
+	<br>
+	More features coming soon!
+	<br>
+	Thank you and enjoy! :)
 </div>

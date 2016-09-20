@@ -3,7 +3,7 @@
 		<h1 class="panel-title">{{list.title.database}} <span ng-if="list.items.length > 0">[{{list.numDone}}/{{list.items.length}}]</span><br/><small>{{list.subtitle.database}}</small></h1>
 	</div>
 	<ul class="list-group">
-		<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': item.done}" ng-repeat="item in list.items">
+		<button type="button" class="list-group-item" ng-click="toggle($index)" ng-class="{'list-group-item-success': item.done}" ng-repeat="item in list.items" when-ready="updateTopButton()">
 			<span ng-class="{'glyphicon glyphicon-ok-circle': !item.done, 'glyphicon glyphicon-ok-sign': item.done}"></span>
 			<span ng-class="{done: item.done}"><b>{{item.name.database}}</b></span>
 		</button>
