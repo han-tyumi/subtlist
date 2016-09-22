@@ -73,6 +73,12 @@ if (isset($data->canEdit)) {
 	} else {
 		echo "failure";
 	}
+} elseif (isset($data->tryKey)) {
+	if ($db->tryKey($data->key)) {
+		echo "success";
+	} else {
+		echo "failure";
+	}
 } else {
 	echo "failure";
 }

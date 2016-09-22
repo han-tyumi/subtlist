@@ -1,4 +1,4 @@
-<div class="panel panel-default">
+<div class="panel panel-default" ng-if="list.canEdit.value">
 	<div class="panel-heading">
 		<form class="form-group" ng-class="{'has-error input-group': !list.isNew.value && list.title.database !== list.title.input}" ng-submit="updateTitle(list.title.input)">
 			<input type="text" class="form-control" placeholder="Title" ng-model="list.title.input">
@@ -43,7 +43,18 @@
 		</form>
 	</div>
 </div>
-
+<form ng-if="!list.canEdit.value" ng-submit="tryKey(edit.inputKey)">
+	<div class="form-group">
+	<label for="key">Edit Key</label>
+		<div class="input-group">
+			<span class="input-group-btn">
+				<button class="btn btn-default" type="submit">Submit</button></button>
+			</span>
+			<input id="key" type="text" class="form-control" ng-model="edit.inputKey">
+		</div>
+	</div>
+	<br>
+</form>
 <div class="well text-center">
 	Please DO NOT clear your cookies for this website.
 	<br>

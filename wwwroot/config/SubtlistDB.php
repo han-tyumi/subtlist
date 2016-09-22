@@ -175,5 +175,20 @@ class SubtlistDB {
 			return false;
 		}
 	}
+
+	// creates a key cookie if the correct key is supplied
+	public function tryKey($key) {
+		$sql = "SELECT COUNT(*) FROM `{$this->listTable}` WHERE `id`=:id AND `key`=:key";
+		$q = $this->conn->prepare($sql);
+		if ($q->execute(array(":id" => $_SESSION["id"], ":key" => $key))) {
+			if ($q->fetchColumn()) {
+				setcookie($_SESSION["id"] . "rw", $key, time() + (31536000 * 5));
+				return true;
+			} else {
+				return false;
+			}
+		}
+		return false;
+	}
 }
 ?>

@@ -233,10 +233,21 @@
 			});
 			return defer.promise;
 		};
+
+		// tries an inputted key
+		this.tryKey = function (key) {
+			var defer = $q.defer();
+			$http.post(dbUrl, {tryKey: true, key: key}).then(function (response) {
+				defer.resolve(response.data === 'success');
+			}, function (response) {
+				defer.reject(response);
+			});
+			return defer.promise;
+		};
 	}])
 
 	// list service
-	.service('listService', ['dbService', '$q', '$cookies', function (dbService, $q, $cookies) {
+	.service('listService', ['dbService', '$q', '$cookies', '$window', function (dbService, $q, $cookies, $window) {
 		// private members
 
 		// list variables
@@ -475,6 +486,12 @@
 				_items.splice(index, 1);
 			});
 		};
+
+		this.tryKey = function (key) {
+			if (dbService.tryKey(key)) {
+				$window.location.reload();
+			}
+		};
 	}])
 
 	// routing configuration
@@ -620,6 +637,10 @@
 		// delete list item
 		$scope.deleteItem = function (index) {
 			listService.deleteItem(index);
+		};
+
+		$scope.tryKey = function (key) {
+			listService.tryKey(key);
 		};
 	}]);
 })();
