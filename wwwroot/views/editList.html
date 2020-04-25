@@ -1,0 +1,68 @@
+<div class="panel panel-default" ng-if="list.canEdit.value">
+	<div class="panel-heading">
+		<form class="form-group" ng-class="{'has-error input-group': !list.isNew.value && list.title.database !== list.title.input}" ng-submit="updateTitle(list.title.input)">
+			<input type="text" class="form-control" placeholder="Title" ng-model="list.title.input">
+			<span class="input-group-btn">
+				<button class="btn btn-success" type="submit" ng-if="!list.isNew.value && list.title.database !== list.title.input">
+					<span class="glyphicon glyphicon-floppy-save"></span>
+				</button>
+			</span>
+		</form>
+		<form class="form-group" ng-class="{'has-error input-group': !list.isNew.value && list.subtitle.database !== list.subtitle.input}" ng-submit="updateSubtitle(list.subtitle.input)">
+			<input type="text" class="form-control" placeholder="Subtitle" ng-model="list.subtitle.input">
+			<span class="input-group-btn">
+				<button class="btn btn-success" type="submit" ng-if="!list.isNew.value && list.subtitle.database !== list.subtitle.input">
+					<span class="glyphicon glyphicon-floppy-save"></span>
+				</button>
+			</span>
+		</form>
+	</div>
+	<ul class="list-group" dnd-list="list.items" dnd-drop="dropCallback(index, item)">
+		<li class="list-group-item" ng-repeat="item in list.items" dnd-draggable="item" dnd-moved="list.items.splice($index, 1); updateItemOrder($index, edit.indexTo)" when-ready="updateTopButton()">
+			<form class="input-group" ng-class="{'has-error': item.name.database !== item.name.input}" ng-submit="updateItem($index, item.name.input)">
+				<input type="text" class="form-control" ng-model="item.name.input">
+				<span class="input-group-btn">
+					<button class="btn btn-danger" type="button" ng-click="deleteItem($index)">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
+					<button class="btn btn-success" type="submit" ng-if="item.name.database !== item.name.input">
+						<span class="glyphicon glyphicon-floppy-save"></span>
+					</button>
+				</span>
+			</form>
+		</li>
+	</ul>
+	<div class="panel-footer">
+		<form class="input-group" ng-submit="addItem(edit.input)">
+			<input type="text" class="form-control" placeholder="Item" ng-model="edit.input">
+			<span class="input-group-btn">
+				<button class="btn btn-success" type="submit">
+					<span class="glyphicon glyphicon-plus"></span>
+				</button>
+			</span>
+		</form>
+	</div>
+</div>
+<form ng-if="!list.canEdit.value" ng-submit="tryKey(edit.inputKey)">
+	<div class="form-group">
+	<label for="key">Edit Key</label>
+		<div class="input-group">
+			<span class="input-group-btn">
+				<button class="btn btn-default" type="submit">Submit</button></button>
+			</span>
+			<input id="key" type="text" class="form-control" ng-model="edit.inputKey">
+		</div>
+	</div>
+	<br>
+</form>
+<div class="well text-center">
+	Please DO NOT clear your cookies for this website.
+	<br>
+	This website uses cookies in order to verify your ability to edit your list.
+	<br>
+	Please bookmark this page in order to make edits to your list in the future.
+	<br>
+	More features coming soon!
+	<br>
+	Thank you and enjoy! :)
+</div>
