@@ -1,0 +1,13 @@
+{
+    "name": "han-tyumi/subtlist",
+    "type": "project",
+    "require": {
+        "vlucas/phpdotenv": "^4.1"
+    },
+    "authors": [
+        {
+            "name": "han-tyumi",
+            "email": "mmchamp95@gmail.com"
+        }
+    ]
+}

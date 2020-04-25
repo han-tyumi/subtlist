@@ -1,24 +1,31 @@
 <?php
-class SubtlistDB {
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+class SubtlistDB
+{
 	// variables
-	private $host = "***REMOVED***";
-	private $dbname = "subtlist";
-	private $username = "subtlist";
-	private $password = "***REMOVED***";
 	private $listTable = "list";
 	private $itemTable = "list_item";
 	private $conn;
 
 	// initialize list database
-	public function __construct() {
-		$this->conn = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->username, $this->password);
+	public function __construct()
+	{
+		$host = getenv("HOST");
+		$dbname = getenv('DBNAME');
+		$username = getenv('USERNAME');
+		$password = getenv('PASSWORD');
+
+		$this->conn = new PDO("mysql:host={$host};dbname={$dbname}", $username, $password);
 		session_start();
 	}
 
 	// list functions
 
 	// returns whether the list is able to be edited
-	public function canEdit() {
+	public function canEdit()
+	{
 		$sql = "SELECT `key` FROM `{$this->listTable}` WHERE `id`=:id";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":id" => $_SESSION["id"]))) {
@@ -37,7 +44,8 @@ class SubtlistDB {
 	}
 
 	// returns if new
-	public function isNew() {
+	public function isNew()
+	{
 		$sql = "SELECT COUNT(*) FROM `{$this->listTable}` WHERE `id`=:id";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":id" => $_SESSION["id"]))) {
@@ -51,7 +59,8 @@ class SubtlistDB {
 	}
 
 	// creates a new list
-	public function createList($title, $subtitle) {
+	public function createList($title, $subtitle)
+	{
 		require_once("token.php");
 		$key = getToken(10);
 		$sql = "INSERT INTO `{$this->listTable}`(`id`, `title`, `subtitle`, `created`, `key`) VALUES (:id,:title,:subtitle,NOW(),:key)";
@@ -65,7 +74,8 @@ class SubtlistDB {
 	}
 
 	// returns the list's title and subtitle
-	public function readList() {
+	public function readList()
+	{
 		$sql = "SELECT `title`, `subtitle` FROM `{$this->listTable}` WHERE `id`=:id";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":id" => $_SESSION["id"]))) {
@@ -77,7 +87,8 @@ class SubtlistDB {
 	}
 
 	// updates the list's title and subtitle
-	public function updateList($title, $subtitle) {
+	public function updateList($title, $subtitle)
+	{
 		if (!$this->canEdit()) {
 			return false;
 		}
@@ -91,7 +102,8 @@ class SubtlistDB {
 	}
 
 	// deletes a list
-	public function deleteList() {
+	public function deleteList()
+	{
 		if (!$this->canEdit()) {
 			return false;
 		}
@@ -107,7 +119,8 @@ class SubtlistDB {
 	// list item functions
 
 	// creates a new list item
-	public function createItem($item, $order_index) {
+	public function createItem($item, $order_index)
+	{
 		if (!$this->canEdit()) {
 			return false;
 		}
@@ -121,7 +134,8 @@ class SubtlistDB {
 	}
 
 	// returns all list items for the current list
-	public function readItem() {
+	public function readItem()
+	{
 		$sql = "SELECT `id`, `item`, `order_index` FROM `{$this->itemTable}` WHERE `list_id`=:list_id ORDER BY `order_index` ASC";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":list_id" => $_SESSION["id"]))) {
@@ -135,7 +149,8 @@ class SubtlistDB {
 	}
 
 	// updates a specified list item
-	public function updateItem($id, $item) {
+	public function updateItem($id, $item)
+	{
 		if (!$this->canEdit()) {
 			return false;
 		}
@@ -149,7 +164,8 @@ class SubtlistDB {
 	}
 
 	// updates an item's order index
-	public function updateItemOrder($id, $order_index) {
+	public function updateItemOrder($id, $order_index)
+	{
 		if (!$this->canEdit()) {
 			return false;
 		}
@@ -163,7 +179,8 @@ class SubtlistDB {
 	}
 
 	// deletes a specified list item
-	public function deleteItem($id) {
+	public function deleteItem($id)
+	{
 		if (!$this->canEdit()) {
 			return false;
 		}
@@ -177,7 +194,8 @@ class SubtlistDB {
 	}
 
 	// creates a key cookie if the correct key is supplied
-	public function tryKey($key) {
+	public function tryKey($key)
+	{
 		$sql = "SELECT COUNT(*) FROM `{$this->listTable}` WHERE `id`=:id AND `key`=:key";
 		$q = $this->conn->prepare($sql);
 		if ($q->execute(array(":id" => $_SESSION["id"], ":key" => $key))) {
@@ -191,4 +209,3 @@ class SubtlistDB {
 		return false;
 	}
 }
-?>
